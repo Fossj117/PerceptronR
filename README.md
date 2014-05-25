@@ -1,0 +1,1 @@
+Perceptron implementation / demo in R. Coded for *Learning From Data* (Mostafa et al.) work-through. 
