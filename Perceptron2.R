@@ -1,6 +1,13 @@
-###Perceptron playing
+## Perceptron in R
+## Jeff Fossett
+## https://github.com/Fossj117/PerceptronR
+
+########### HELPER FUNCTIONS #############
 
 add_boundary <- function(w, color='red'){
+  # Plot decision boundary defined by 
+  # a parameter vector w
+  
   w <- as.numeric(w)  
   
   b = w[1]
@@ -13,59 +20,87 @@ add_boundary <- function(w, color='red'){
 }
 
 activate <- function(df,w){ 
-  #df should be of shape m x n
-  #w should be of shape 1 x n
+  # returns current classifications on data 
+  # for a given set of params, w
+  # 
+  # df should be of shape m x n
+  # w should be of shape 1 x n
+  
   activation <- apply(df, 1, function(x) sum(x*w))
   return(ifelse(activation > 0, 1, -1))
 }
 
+random_row <- function(mis_classifs){
+  # select a random row number from a 
+  # data frame of choices
+  
+  rand_choice <- if(nrow(mis_classifs)==1){ #if there is only one misclassification, choose it
+    as.numeric(rownames(mis_classifs))
+  }else{ #otherwise, choose randomly from the misclassified rows
+    sample(as.numeric(rownames(mis_classifs)),1) 
+  }
+  return(rand_choice)
+}
 
-#### GENERATE THE DATA ####
+################ GENERATE THE DATA ##############################
 
-#randomly choose the TRUE parameters
+NUMPTS = 100 
+SEED = 117
+
+#randomly choose the TRUE separator
 w_true <- runif(3, -5, 5)
 
 #generate random data for classification
-x0 <- rep(1, 30)
-x1 <- runif(30, -10, 10)
-x2 <- runif(30,-10,10)
+x0 <- rep(1, NUMPTS)
+x1 <- runif(NUMPTS, -10, 10)
+x2 <- runif(NUMPTS,-10,10)
 df <- data.frame(x0, x1, x2) #put in a data frame
 
-f_class <- activate(df, w_true) #get true classifications using w_true
+#get true classifications using w_true
+f_class <- activate(df, w_true) 
 
 #plot data
 plot(x1,x2, col=factor(f_class))
 add_boundary(w_true, color='blue')
 
-#### LEARNING ####
+##################### LEARNING ##########################
 
-#randomly initialize estimate parameters
+#randomly initialize w_guess = current hypothesis: 
 w_guess <- runif(3, -.5, .5)
-add_boundary(w_guess, color='green') #plot current hypothesis
-g_class <- activate(df, w_guess) #stores classifications with current w_guess
 
-## Start PLA ###
+#plot current hypothesis
+#add_boundary(w_guess, color='green') 
 
-#max_iter <- 100 #maximum number of iterations
-#n_misses <- rep(NA, 100) #because R
+#get classifications for current w_guess:
+g_class <- activate(df, w_guess) 
+
+##### Start Perceptron Learning Algorithm #######
+
+num_iterations <- 0
 
 while(!all(g_class==f_class)){ #while there are mis-classifications
   
+  #store the number of iterations
+  num_iterations <- num_iterations + 1
+  
   #randomly choose a mis-classified example
   mis_classifs <- df[g_class != f_class,]  
-  
-  rand_choice <- if(nrow(mis_classifs)==1){
-    as.numeric(rownames(mis_classifs))
-  }else{
-    sample(as.numeric(rownames(mis_classifs)),1) #choose one of the misclassed rows
-  }
+  rand_choice <- random_row(mis_classifs)
   
   #update the weights
   w_guess <- w_guess + f_class[rand_choice]*as.vector(mis_classifs[rownames(mis_classifs)==rand_choice,])
   
+  #update predictions with new boudary (and plot)
   g_class <- activate(df, w_guess)
   
+  #plot(x1,x2, col=factor(f_class))
   add_boundary(w_guess, color='pink')
   
-  readline("Press <return> to continue") 
+  #pause before next iteration
+  #readline("Press <return> to continue") 
 }
+
+print(paste("Converged in", num_iterations, "iterations"))
+add_boundary(w_guess, color='red') #plot final boundary
+
+
