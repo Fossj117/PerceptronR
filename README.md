@@ -1,4 +1,4 @@
-#### Perceptron in R
+## Perceptron in R
 
 Simple implementation/demo of the perceptron (and the perceptron learning algorithm) in R. Coded for [*Learning From Data*](https://work.caltech.edu/telecourse.html) (Mostafa et al.) work-through. 
 
